@@ -112,27 +112,19 @@ word += board[r][c];
 if(prefix.find(word) != prefix.end()){
   // recurse moving to next appropriate position in board 
   bool longest_word = boggleHelper(dict, prefix, board, word, result, r + dr, c + dc, dr, dc);
-  // if longest possible word isn't valid word
-  if (!longest_word){
-    // remove most recent letter
-    word.pop_back();
-  }
-  // just return because longest will have been added to the set
-  else if(longest_word){
+  // if longest possible word is valid word
+  if (longest_word){
     return true;
   }
 }
-// keep removing letters until valid word or no word
-while(dict.find(word) == dict.end() && word != ""){
-  word.pop_back();
+// if word is valid in dictionary add it to result set
+if (dict.find(word) != dict.end()){
+  result.insert(word);
+  return true;
 }
-// no words found
-if(word == ""){
-  return false;
-}
-// word found add it to set
-result.insert(word);
-return true;
+// remove last letter and return false
+word.pop_back();
+return false;
 
 
 }
