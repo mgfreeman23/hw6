@@ -94,6 +94,45 @@ std::set<std::string> boggle(const std::set<std::string>& dict, const std::set<s
 bool boggleHelper(const std::set<std::string>& dict, const std::set<std::string>& prefix, const std::vector<std::vector<char> >& board, 
 								   std::string word, std::set<std::string>& result, unsigned int r, unsigned int c, int dr, int dc)
 {
-//add your solution here!
+
+// if at the edges of the board, can't add anything else
+if (r == board.size() || c == board.size()) {
+  // if word in dictionary of valid words add it to result set
+  if(dict.find(word) != dict.end()){
+    result.insert(word);
+    return true;
+  }
+  return false;
+}
+
+// add letter to word
+word += board[r][c];
+
+// if current word is a prefix for longer words
+if(prefix.find(word) != prefix.end()){
+  // recurse moving to next appropriate position in board 
+  bool longest_word = boggleHelper(dict, prefix, board, word, result, r + dr, c + dc, dr, dc);
+  // if longest possible word isn't valid word
+  if (!longest_word){
+    // remove most recent letter
+    word.pop_back();
+  }
+  // just return because longest will have been added to the set
+  else if(longest_word){
+    return true;
+  }
+}
+// keep removing letters until valid word or no word
+while(dict.find(word) == dict.end() && word != ""){
+  word.pop_back();
+}
+// no words found
+if(word == ""){
+  return false;
+}
+// word found add it to set
+result.insert(word);
+return true;
+
 
 }
