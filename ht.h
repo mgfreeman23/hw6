@@ -277,6 +277,7 @@ private:
 
     // ADD MORE DATA MEMBERS HERE, AS NECESSARY
     double resizeAlpha_;
+    // number of items added to vector, includes "deleted" until resize
     double item_count_;
 
 };
@@ -475,41 +476,59 @@ template<typename K, typename V, typename Prober, typename Hash, typename KEqual
 void HashTable<K,V,Prober,Hash,KEqual>::resize()
 {
     mIndex_ += 1;
+    vector<HashItem*> old_table = table_;
+    vector<HashItem*> new_table;
+    table_ = new_table;
     // determine new size for table
     HASH_INDEX_T new_size = CAPACITIES[mIndex_];
 
-    // make a temp vector that stores the data in table_ that is not deleted
-    vector<HashItem*> temp(table_.size(), nullptr);
-    for(int i = 0; i < temp.size(); i++){
-        if(table_[i] != nullptr){
-            if(!(table_[i]->deleted)){
-                temp[i] = new HashItem(table_[i]->item);
-            } 
+    while(table_.size() != new_size){
+        table_.push_back(nullptr);
+    }
+    this->item_count_ = 0;
+    for(unsigned int i = 0; i < old_table.size(); i++){
+        if(old_table[i] != nullptr){
+            if(!(old_table[i]->deleted)){
+                HASH_INDEX_T loc = probe((old_table[i]->item).first);
+                table_[loc] = old_table[i];
+                this->item_count_ += 1;
+            } else {
+                delete old_table[i];
+            }
         }
     }
 
-    // adjust the size of table to the new size and fill it with nullptr values
-    // delete original data in table_?
-    while (!table_.empty()){
-        // simplify to delete table_.back()
-        HashItem* item = table_.back();
-        delete item;
-        table_.pop_back();
-    }
-    for(int i = 0; i < new_size; i++){
-         table_.push_back(nullptr);
-    }
-    this->item_count_ = 0;
-    // table_.resize(new_size, nullptr);
-    // re-hash all the data that is not marked as deleted into the newly sized table_
-    for(int i = 0; i < temp.size(); i++){
-        if(temp[i] != nullptr){
-            HASH_INDEX_T loc = probe((temp[i]->item).first);
-            table_[loc] = temp[i];
-            this->item_count_ += 1;
+    // // make a temp vector that stores the data in table_ that is not deleted
+    // vector<HashItem*> temp(table_.size(), nullptr);
+    // for(int i = 0; i < temp.size(); i++){
+    //     if(table_[i] != nullptr){
+    //         if(!(table_[i]->deleted)){
+    //             temp[i] = new HashItem(table_[i]->item);
+    //         } 
+    //     }
+    // }
+
+    // // adjust the size of table to the new size and fill it with nullptr values
+    // // delete original data in table_?
+    // while (!table_.empty()){
+    //     // simplify to delete table_.back()
+    //     HashItem* item = table_.back();
+    //     delete item;
+    //     table_.pop_back();
+    // }
+    // for(int i = 0; i < new_size; i++){
+    //      table_.push_back(nullptr);
+    // }
+    // this->item_count_ = 0;
+    // // re-hash all the data that is not marked as deleted into the newly sized table_
+    // for(int i = 0; i < temp.size(); i++){
+    //     if(temp[i] != nullptr){
+    //         HASH_INDEX_T loc = probe((temp[i]->item).first);
+    //         table_[loc] = temp[i];
+    //         this->item_count_ += 1;
             
-        }
-    }
+    //     }
+    // }
 
     // delete data in temp that is there but deleted?
     
